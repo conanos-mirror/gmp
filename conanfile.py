@@ -17,7 +17,7 @@ class GmpConan(ConanFile):
     source_subfolder = "source_subfolder"
     settings = "os", "arch", "compiler", "build_type"
     options = {"shared": [True, False], "fPIC": [True, False], "disable_assembly": [True, False], "run_checks": [True, False]}
-    default_options = "shared=False", "fPIC=True", "disable_assembly=True", "run_checks=False"
+    default_options = "shared=True", "fPIC=True", "disable_assembly=True", "run_checks=False"
 
     def configure(self):
         if self.settings.compiler == "Visual Studio":

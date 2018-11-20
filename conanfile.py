@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from conans import ConanFile, tools, AutoToolsBuildEnvironment
+from conans import ConanFile, tools, AutoToolsBuildEnvironment,CMake
 import os
 
 
@@ -13,15 +13,17 @@ class GmpConan(ConanFile):
     website = "https://gmplib.org"
     license = "LGPL-3.0, GPL-2.0"
     exports = ["LICENSE.md"]
-    exports_sources = ["FindGMP.cmake"]
+    exports_sources = ["FindGMP.cmake",'CMakeLists.txt','cmake/*']
     source_subfolder = "source_subfolder"
     settings = "os", "arch", "compiler", "build_type"
     options = {"shared": [True, False], "fPIC": [True, False], "disable_assembly": [True, False], "run_checks": [True, False]}
-    default_options = "shared=True", "fPIC=True", "disable_assembly=True", "run_checks=False"
+    default_options = "shared=False", "fPIC=True", "disable_assembly=True", "run_checks=False"
+    generators = "cmake"
 
     def configure(self):
         if self.settings.compiler == "Visual Studio":
-            raise tools.ConanException("The gmp package cannot be deployed on Visual Studio.")
+            del self.options.fPIC
+            #raise tools.ConanException("The gmp package cannot be deployed on Visual Studio.")
 
     def source(self):
         source_url = "https://gmplib.org/download/gmp"
@@ -29,7 +31,7 @@ class GmpConan(ConanFile):
         extracted_dir = self.name + "-" + self.version
         os.rename(extracted_dir, self.source_subfolder)
 
-    def build(self):
+    def autotool_build(self):
         env_build = AutoToolsBuildEnvironment(self)
         env_build.fpic = self.options.fPIC
         with tools.environment_append(env_build.vars):
@@ -55,6 +57,21 @@ class GmpConan(ConanFile):
                 # According to the gmp readme file, make check should not be omitted, but it causes timeouts on the CI server.
                 if self.options.run_checks:
                     env_build.make(args=['check'])
+    def cmake_build(self):
+        cmake = CMake(self)
+        cmake.configure(
+        defs={'USE_CONAN_IO':True,
+            'GMP_PROJECT_DIR':self.source_subfolder,
+            'ENABLE_UNIT_TESTS':'OFF'
+        })
+        cmake.build()
+        cmake.install()
+
+    def build(self):
+        if self.settings.compiler == 'Visual Studio':
+            self.cmake_build()
+        else:
+            self.autotool_build()
 
     def package(self):
         # dual license

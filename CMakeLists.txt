@@ -114,7 +114,7 @@ set(_SOURCES ${_SOURCES} ${MPN_GENERIC_SOURCES}  ${_MPN_ARCH_SRCS}
 	${_PRINTF_SRCS} ${_RAND_SRCS} ${_SCANF_SRCS}
 	)
 
-add_library(gmp ${_SOURCES})
+add_library(gmp ${_SOURCES} ${CMAKE_CURRENT_SOURCE_DIR}/cmake/msvc/libgmp.def)
 assign_source_group(${_SOURCES})
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/gmp.h DESTINATION include)

@@ -57,9 +57,10 @@ class GmpConan(ConanFile):
                 # According to the gmp readme file, make check should not be omitted, but it causes timeouts on the CI server.
                 if self.options.run_checks:
                     env_build.make(args=['check'])
+
     def cmake_build(self):
         cmake = CMake(self)
-        cmake.configure(
+        cmake.configure(build_folder='~build',
         defs={'USE_CONAN_IO':True,
             'GMP_PROJECT_DIR':self.source_subfolder,
             'ENABLE_UNIT_TESTS':'OFF'

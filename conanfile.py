@@ -23,7 +23,8 @@ class GmpConan(ConanFile):
     def configure(self):
         if self.settings.compiler == "Visual Studio":
             del self.options.fPIC
-            #raise tools.ConanException("The gmp package cannot be deployed on Visual Studio.")
+            if self.options.shared:
+               raise tools.ConanException("The gmp package cannot be built shared on Visual Studio.")
 
     def source(self):
         source_url = "https://gmplib.org/download/gmp"
@@ -59,12 +60,14 @@ class GmpConan(ConanFile):
                     env_build.make(args=['check'])
 
     def cmake_build(self):
+        GMP_PROJECT_DIR = os.path.abspath(self.source_subfolder).replace('\\','/')
+        
         cmake = CMake(self)
-        cmake.configure(build_folder='~build',
-        defs={'USE_CONAN_IO':True,
-            'GMP_PROJECT_DIR':self.source_subfolder,
-            'ENABLE_UNIT_TESTS':'OFF'
-        })
+        cmake.configure(source_folder= '.',build_folder='~build',
+            defs={'USE_CONAN_IO':True,
+                  'GMP_PROJECT_DIR':GMP_PROJECT_DIR,
+                  'ENABLE_UNIT_TESTS':'ON' if os.environ.get('CONANOS_BUILD_TESTS') else 'OFF'
+            })
         cmake.build()
         cmake.install()
 

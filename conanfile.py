@@ -33,6 +33,8 @@ class GmpConan(ConanFile):
         return False
 
     def configure(self):
+        # Because this is pure C
+        del self.settings.compiler.libcxx
         if self.settings.compiler == "Visual Studio":
             del self.options.fPIC
             if self.options.shared:

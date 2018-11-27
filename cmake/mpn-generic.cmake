@@ -229,8 +229,8 @@ add_generic_source(xnor_n logops_n) # diff
 add_generic_source(xor_n logops_n) # diff
 add_generic_source(zero zero) 
 add_generic_source(zero_p zero_p)
-message("================================================")
-	foreach( n ${MPN_GENERIC_SOURCES})
-		message("* ${n}")
-	endforeach()
-message("================================================")
+#message("================================================")
+#	foreach( n ${MPN_GENERIC_SOURCES})
+#		message("* ${n}")
+#	endforeach()
+#message("================================================")

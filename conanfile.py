@@ -61,14 +61,20 @@ class GmpConan(ConanFile):
 
     def cmake_build(self):
         GMP_PROJECT_DIR = os.path.abspath(self.source_subfolder).replace('\\','/')
-        
+
+        CONANOS_RUN_TESTS   = os.environ.get('CONANOS_RUN_TESTS')
+        CONANOS_BUILD_TESTS = os.environ.get('CONANOS_BUILD_TESTS',CONANOS_RUN_TESTS)
+
         cmake = CMake(self)
         cmake.configure(source_folder= '.',build_folder='~build',
             defs={'USE_CONAN_IO':True,
                   'GMP_PROJECT_DIR':GMP_PROJECT_DIR,
-                  'ENABLE_UNIT_TESTS':'ON' if os.environ.get('CONANOS_BUILD_TESTS') else 'OFF'
+                  'ENABLE_UNIT_TESTS':'ON' if CONANOS_BUILD_TESTS else 'OFF'
             })
+
         cmake.build()
+        if CONANOS_RUN_TESTS:
+            cmake.test()
         cmake.install()
 
     def build(self):

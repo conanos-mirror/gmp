@@ -4,6 +4,7 @@
 from conans import ConanFile, tools, AutoToolsBuildEnvironment,CMake
 import os
 
+from conanos.build import config_scheme
 
 class GmpConan(ConanFile):
     name = "gmp"
@@ -16,15 +17,29 @@ class GmpConan(ConanFile):
     exports_sources = ["FindGMP.cmake",'CMakeLists.txt','cmake/*']
     source_subfolder = "source_subfolder"
     settings = "os", "arch", "compiler", "build_type"
-    options = {"shared": [True, False], "fPIC": [True, False], "disable_assembly": [True, False], "run_checks": [True, False]}
-    default_options = "shared=False", "fPIC=True", "disable_assembly=True", "run_checks=False"
+    options = {"shared": [True, False], "fPIC": [True, False], "disable_assembly": [True, False]}#, "run_checks": [True, False]}
+    default_options = "shared=False", "fPIC=True", "disable_assembly=True"#, "run_checks=False"
     generators = "cmake"
+
+    @property
+    def is_msvc(self):
+        return self.settings.compiler == "Visual Studio"
+
+    @property
+    def run_checks(self):
+        CONANOS_RUN_CHECKS = os.environ.get('CONANOS_RUN_CHECKS')
+        if CONANOS_RUN_CHECKS:
+            return self.name in CONANOS_RUN_CHECKS.split()
+        return False
 
     def configure(self):
         if self.settings.compiler == "Visual Studio":
             del self.options.fPIC
             if self.options.shared:
                raise tools.ConanException("The gmp package cannot be built shared on Visual Studio.")
+               
+    def requirements(self):
+        config_scheme(self)
 
     def source(self):
         source_url = "https://gmplib.org/download/gmp"
@@ -56,29 +71,26 @@ class GmpConan(ConanFile):
                 env_build.make()
 
                 # According to the gmp readme file, make check should not be omitted, but it causes timeouts on the CI server.
-                if self.options.run_checks:
+                #if self.options.run_checks:
+                if self.run_checks:
                     env_build.make(args=['check'])
 
     def cmake_build(self):
         GMP_PROJECT_DIR = os.path.abspath(self.source_subfolder).replace('\\','/')
-
-        CONANOS_RUN_TESTS   = os.environ.get('CONANOS_RUN_TESTS')
-        CONANOS_BUILD_TESTS = os.environ.get('CONANOS_BUILD_TESTS',CONANOS_RUN_TESTS)
-
+        
         cmake = CMake(self)
         cmake.configure(source_folder= '.',build_folder='~build',
             defs={'USE_CONAN_IO':True,
                   'GMP_PROJECT_DIR':GMP_PROJECT_DIR,
-                  'ENABLE_UNIT_TESTS':'ON' if CONANOS_BUILD_TESTS else 'OFF'
+                  'ENABLE_UNIT_TESTS':self.run_checks
             })
-
         cmake.build()
-        if CONANOS_RUN_TESTS:
+        if self.run_checks:
             cmake.test()
         cmake.install()
 
     def build(self):
-        if self.settings.compiler == 'Visual Studio':
+        if self.is_msvc:
             self.cmake_build()
         else:
             self.autotool_build()

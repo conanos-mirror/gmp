@@ -141,23 +141,13 @@ if( ENABLE_UNIT_TESTS )
 	  #      make_test            #
 	  #---------------------------#
   macro(make_test suite name)
-	set(dir ${ARGV2})
-	if(NOT dir)
-	  set(dir ${GMP_TESTS_DIR}/${suite})
-	endif()
-	add_executable(${suite}-${name} ${dir}/${name}.c)
-	target_link_libraries(${suite}-${name} gmp libtests)
-	#add_test(${suite}-${name} ${suite}-${name})
-	
-
-	add_test(NAME ${suite}-${name}
-	   COMMAND ${CMAKE_COMMAND}
-	   -DPROGRAM=${suite}-${name}
-	   -DARGUMENTS=0
-	   -DLOGFILE=${suite}-${name}-test.log  # optional
-	   -DCMAKE_SYSTEM_NAME=${CMAKE_SYSTEM_NAME}
-	   -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/runtest.cmake)
-
+	 set(dir ${ARGV2})
+	 if(NOT dir)
+	   set(dir ${GMP_TESTS_DIR}/${suite})
+	 endif()
+	 add_executable(${suite}-${name} ${dir}/${name}.c)
+	 target_link_libraries(${suite}-${name} gmp libtests)
+	 add_test("[ ${suite} ] ${name}" ${suite}-${name})
   endmacro()
   
   

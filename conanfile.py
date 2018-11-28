@@ -33,7 +33,8 @@ class GmpConan(ConanFile):
         return False
 
     def configure(self):
-        if self.settings.compiler == "Visual Studio":
+        del self.settings.compiler.libcxx	
+        if self.is_msvc:
             del self.options.fPIC
             if self.options.shared:
                raise tools.ConanException("The gmp package cannot be built shared on Visual Studio.")

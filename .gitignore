@@ -38,3 +38,13 @@ tmp/
 
 # IDE
 .idea/*
+
+# build temp
+_build
+_pkgconfig
+_source
+_sources
+package
+conanbuildinfo.cmake
+conanbuildinfo.txt
+conaninfo.txt
